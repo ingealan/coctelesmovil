@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
@@ -8,34 +8,18 @@ const Stack = createNativeStackNavigator();
 
 export default function Login() {
 
-    const [ username, setUsername] = username.useState('');
-    const [ password, setPassword] = password.useState('');
-    const [ validado, setValidado] = validado.useState(0);
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const navigation = useNavigation();
 
-    const validar = (u, c) => {
-        if (u == 'Alan'){
-            if (c == '123'){
-                setValidado(true);
-                return;
-            }
-        }else {
-            setValidado(false);
+    const handleLogin = () => {
+        if (username === 'Alan' && password === '12345') {
+            navigation.navigate('Carga');
+        } else {
+            alert('Credenciales Incorrectas. Por favor, inténtalo de nuevo.');
         }
-    }
+    };
 
-    const acceder = () => {
-        let u = username.setUsername;
-        let c = password.setPassword;
-        validar(u,c);
-        if (validar == true){
-            alert('Acceso concedido')
-            Stack.navigation('/Carga');
-        }
-        else {
-            alert('Verfique su informacion, acceso denegado.')
-        }
-
-    }
     return (
         <SafeAreaView style={styles.safeArea}>
             <StatusBar style="light" />
@@ -64,7 +48,7 @@ export default function Login() {
                             style={styles.input}
                             placeholder="Ejemplo: alan123"
                             placeholderTextColor="#999"
-                            value={usuario}
+                            onChangeText={setUsername}
                         />
                     </View>
 
@@ -74,14 +58,14 @@ export default function Login() {
                             style={styles.input}
                             placeholder="Ejemplo: password123"
                             placeholderTextColor="#999"
-                            value={contraseña}
+                            onChangeText={setPassword}
                         />
                     </View>
                 </View>
 
                 <View style={styles.seccion}>
                     <TouchableOpacity style={[styles.boton, styles.botonPrimario]}>
-                        <Text style={styles.botonTexto} onPress={{ acceder }}>Acceder</Text>
+                        <Text style={styles.botonTexto} onPress={{ handleLogin }}>Acceder</Text>
                     </TouchableOpacity>
 
                 </View>
@@ -89,30 +73,6 @@ export default function Login() {
                 <View style={{ height: 30 }} />
 
             </ScrollView>
-
-            <Modal
-                visible={false}
-                animationType="slide"
-                transparent={true}
-            >
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContent}>
-                        <View style={styles.modalHeader}>
-                            <Text style={styles.modalTitulo}>Resultados</Text>
-                        </View>
-
-                        <ScrollView style={styles.modalScroll}>
-                            <View style={styles.resultadoItem}>
-                                <Text style={styles.modalTexto}>Resultado aquí</Text>
-                            </View>
-                        </ScrollView>
-
-                        <Pressable style={styles.modalBoton}>
-                            <Text style={styles.modalBotonTexto}>Cerrar</Text>
-                        </Pressable>
-                    </View>
-                </View>
-            </Modal>
 
         </SafeAreaView>
     );

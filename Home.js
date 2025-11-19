@@ -8,36 +8,101 @@ import {
     Image,
     ScrollView,
     FlatList,
-    Modal,
-    ActivityIndicator,
+    Animated,
     Alert,
     Pressable
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import * as ImagePicker from 'expo-image-picker';
+import * as MediaLibrary from 'expo-media-library';
 
 export default function Home() {
 
-    const [cocteles, setCocteles] = cocteles.useState([]);
-    const [refreshing, setRefreshing] = refreshing.useState(false)
-    const [loading, setLoading] = loading.useState(false);
+    const [cocteles, setCocteles] = React.useState([]);
+    const [refreshing, setRefreshing] = React.useState(false);
+    const [loading, setLoading] = React.useState(true);
 
-    const cargarAPI = async () => {
+    const [selectedImage, setSelectedImage] = useState(null);
+
+    useEffect(() => {
+        (async () => {
+            const cameraPermission = await ImagePicker.requestCameraPermissionsAsync();
+            const mediaPermission = await MediaLibrary.requestPermissionsAsync();
+            const libraryPermission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+            if (
+                cameraPermission.status !== 'granted' ||
+                mediaPermission.status !== 'granted' ||
+                libraryPermission.status !== 'granted'
+            ) {
+                Alert.alert('Permisos requeridos', 'Se necesitan permisos para usar la cámara y guardar fotos.');
+            }
+        })();
+    }, []);
+
+    const fetchCocteles = async () => {
         try {
-            setLoading(true);
-            const res = await fetch('https://www.thecocktaildb.com/api/json/v1/1/search.php?s=margarita');
-            const data = await res.json();
+            const response = await fetch(
+                'httpshttps://www.thecocktaildb.com/api/json/v1/1/search.php?s=margarita'
+            );
+            const data = await response.json();
             setCocteles(data.results);
         } catch (error) {
-            Alert.alert('Error', 'No se cargó');
+            alert('Error', 'No se pudo cargar los cocteles');
         } finally {
             setLoading(false);
         }
     };
 
-    useEffect(() => {
-        cargarAPI();
+    React.useEffect(() => {
+        fetchCocteles();
     }, []);
+
+    const onRefresh = async () => {
+        setRefreshing(true);
+        try {
+            await fetchCocteles();
+        } catch (error) {
+            Alert.alert('Error', 'No se pudo recargar');
+        } finally {
+            setRefreshing(false);
+        }
+    };
+
+    const renderCocteles = ({ item }) => (
+        <View style={styles.coctelesCard}>
+            <Text style={styles.coctelesTitle}>{item.strDrink}</Text>
+            <Text style={styles.coctelesTitle}>{item.strCategory}</Text>
+        </View>
+    );
+
+    // Abrir galería
+    const openImagePickerAsync = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            setSelectedImage(result.assets[0].uri);
+        }
+    };
+    // Tomar foto y guardar en galería
+    const openCameraAsync = async () => {
+        const result = await ImagePicker.launchCameraAsync({
+            quality: 1,
+            saveToPhotos: true,
+        });
+
+        if (!result.canceled) {
+            setSelectedImage(result.assets[0].uri);
+            if (Platform.OS !== 'web') {
+                await MediaLibrary.saveToLibraryAsync(result.assets[0].uri);
+            }
+            Alert.alert('¡Foto guardada!', 'La foto se ha guardado en tu galería.');
+        }
+    };
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -49,6 +114,16 @@ export default function Home() {
                     <Text style={styles.titulo}>Sistema Cocteles</Text>
                 </View>
 
+                <Animated.Image
+                    source={selectedImage ? { uri: selectedImage } : { uri: 'https://picsum.photos/200/200' }}
+                    style={{
+                        width: 150,
+                        height: 150,
+                        borderRadius: 10,
+                        transform: selectedImage ? [{ rotate: animatedRotation }] : [],
+                        marginBottom: 20,
+                    }}
+                />
                 <View style={styles.imagenContainer}>
                     <Image
                         source={{ uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQmn191KPqCC5LdgEusc4O67PyiFGO5pFb45Q&s' }}
@@ -58,21 +133,31 @@ export default function Home() {
                 </View>
 
                 <View style={styles.seccion}>
+                    <TouchableOpacity style={[styles.button, styles.botonAPI]} onPress={openImagePickerAsync}>
+                        <Text style={styles.buttonText}>Abrir Galería</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={[styles.button, styles.botonAPI]} onPress={openCameraAsync}>
+                        <Text style={styles.buttonText}>Tomar Foto</Text>
+                    </TouchableOpacity>
                     <TouchableOpacity style={[styles.boton, styles.botonAPI]}>
                         <Text style={styles.botonTexto} onPress={cargarAPI}>Cargar desde API</Text>
                     </TouchableOpacity>
                 </View>
 
                 <View style={styles.seccion}>
-                    <Text style={styles.seccionTitulo}>Resultados</Text>
-                    <View style={styles.itemCard} source={map=cocteles} >
-                        <Text style={styles.itemTitulo} >{cocteles.strDrink}</Text>
-                        <Text style={styles.itemDescripcion}>{cocteles.strCategory}</Text>
-                    </View>
+                    <FlatList
+                        data={cocteles}
+                        renderItem={renderCocteles}
+                        keyExtractor={(item) => item.id.toString()}
+                        contentContainerStyle={styles.listContent}
+                        refreshControl={
+                            <RefreshControl
+                                refreshing={refreshing}
+                                onRefresh={onRefresh}
+                            />
+                        }
+                    />
                 </View>
-
-                <View/>
-
             </ScrollView>
 
         </SafeAreaView>
@@ -86,6 +171,9 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
+    },
+    listContent: {
+        padding: 15,
     },
     header: {
         backgroundColor: '#2196f3',

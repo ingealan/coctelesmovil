@@ -1,12 +1,29 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
+import Login from './Login';
+import Home from './Home';
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Login">
+        <Stack.Screen 
+          name="Login" 
+          component={Login} 
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen 
+          name="Home" 
+          component={Home} 
+          options={{ title: 'Inicio' }}
+        />
+        <Stack.Screen 
+          name="Carga" 
+          component={Carga} 
+          options={{ title: 'Carga' }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
 

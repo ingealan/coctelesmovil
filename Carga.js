@@ -15,31 +15,36 @@ const Stack = createNativeStackNavigator();
 
 export default function Carga() {
 
-    const [progress, setProgress] = progress.useState[0];
+    const [loading, setLoading] = useState(true);
+    const [progress, setProgress] = useState(0);
+    const navigation = useNavigation();
 
     useEffect(() => {
-        setInterval(() => {
-            for (let i = 0; i = 1; i = i + 0.1)
-                progress = setProgress(i)
-        }, 2000);
-        return () => Navigator.navigation('./Home');
+        let interval = setInterval(() => {
+            setProgress((oldProgress) => {
+                if (oldProgress >= 1) {
+                    setTimeout(() => setLoading(false), 200);
+                    return 1;
+                }
+                return oldProgress + 0.1;
+            });
+        }, 200);
+        return () => clearInterval(interval);
     }, []);
 
     return (
         <ImageBackground style={styles.imagenback}
             source={{ uri: 'https://hosteleriauno.es/blog/wp-content/uploads/2022/06/mejores-cocteles-verano-1024x683.jpg' }}>
+            <Text style={{ marginBottom: 10 }}>Cargando...</Text>
+            <Progress.Bar progress={progress} width={200} />
             <SafeAreaView style={styles.safeArea}>
                 <StatusBar style="light" />
-
                 <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-
                     <View style={styles.header}>
                         <Text style={styles.titulo}>Cargando aplicación</Text>
-                        <ActivityIndicator source={progress}></ActivityIndicator>
+                        <ActivityIndicator value={progreso}></ActivityIndicator>
                     </View>
-
                 </ScrollView>
-
             </SafeAreaView>
         </ImageBackground>
     );
