@@ -44,7 +44,7 @@ export default function Home() {
     const fetchCocteles = async () => {
         try {
             const response = await fetch(
-                'httpshttps://www.thecocktaildb.com/api/json/v1/1/search.php?s=margarita'
+                'https://www.thecocktaildb.com/api/json/v1/1/search.php?s=margarita'
             );
             const data = await response.json();
             setCocteles(data.results);

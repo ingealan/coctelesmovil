@@ -2,6 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
 import Login from './Login';
 import Home from './Home';
+import Carga from './Carga';
 
 export default function App() {
   return (
